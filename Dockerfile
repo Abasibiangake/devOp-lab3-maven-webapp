@@ -6,7 +6,6 @@ COPY . /app
 
 # Set the working directory to the root of the project
 WORKDIR /app
-
 # Build the project using Maven
 RUN mvn clean package -DskipTests
 
