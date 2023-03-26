@@ -1,5 +1,5 @@
 # Use the official Maven image as the base image
-FROM maven:alpine AS build
+FROM maven:3.8.4-openjdk-11 AS build
 
 # Copy the project source code to the container
 COPY . /app
@@ -10,7 +10,7 @@ WORKDIR /app
 RUN mvn clean package -DskipTests
 
 # Use the official OpenJDK image as the base image for the runtime image
-FROM openjdk:13-jdk-alpine 
+FROM openjdk:11-jre-slim-buster
 
 # Set the working directory to the root of the application
 WORKDIR /app
