@@ -1,58 +1,43 @@
-pipeline {
-  agent any
-  
-  stages {
-    stage('Check out') {
-      steps {
-        checkout scm
-      }
-    }
+pipeline{
+    agent any
     
-    stage('Build Maven Project') {
-      steps {
-        sh 'mvn clean package'
-      }
+    environment{
+        DOCKERHUB_CREDENTIALS = credentials('kamsi-docker')
     }
-    
-    stage('Docker Build') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials-devOplab3') {
-            def image = docker.build("exercise1-docker-image")
-            image.push()
+    stages{
+        stage('Check out') {
+          steps {
+            checkout scm
           }
         }
-      }
-    }
-    
-    stage('Docker Login') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials-devOplab3') {
-            // just logging in is enough
+        stage('Build Maven Project') {
+          steps {
+            sh 'mvn clean package'
           }
         }
-      }
-    }
-    
-    stage('Docker Push') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials-devOplab3') {
-            def image = docker.image("exercise1-docker-image")
-            image.push()
-          }
+        stage("Docker Build"){
+            steps{
+                sh 'echo "Docker build"'
+                sh 'docker build -t abasibiangake/exercise1-docker-image ./'
+            }
         }
-      }
+        stage('Docker Login'){
+            steps {
+                sh 'echo "Logging into docker"'	
+                sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'	
+            }
+        }
+        stage('Docker Push'){
+            steps {
+                sh 'echo "Docker Push"'	
+                sh 'docker push abasibiangake/exercise1-docker-image'	
+            }
+        }
     }
-  }
-  
-  post {
-    always {
-      sh 'docker image rm -f exercise1-docker-image'
+    post{
+        always{
+            sh 'docker logout'
+        }
     }
-  }
 }
 
-
-//docker-hub-credentials-devOplab3
